@@ -3,7 +3,7 @@ import { WORKSPACE_ID, workspaceSlug } from "@crm/db/workspace";
 
 export { WORKSPACE_ID };
 
-export const DEFAULT_WORKSPACE_NAME = "CRM";
+export const DEFAULT_WORKSPACE_NAME = "Mynaani";
 
 export const WORKSPACE_ROLES = ["owner", "admin", "member"] as const;
 
@@ -78,7 +78,7 @@ export async function ensureWorkspaceMembership(
 						id: crypto.randomUUID(),
 						organizationId: workspace.id,
 						userId: user.id,
-						role: index === 0 ? "owner" : "member",
+						role: index === 0 ? "owner" : "admin",
 						createdAt: new Date(),
 					})),
 					skipDuplicates: true,
@@ -93,7 +93,7 @@ export async function ensureWorkspaceMembership(
 					id: crypto.randomUUID(),
 					organizationId: workspace.id,
 					userId,
-					role: "member",
+					role: "admin",
 					createdAt: new Date(),
 				},
 				update: {},

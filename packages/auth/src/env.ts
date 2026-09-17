@@ -79,4 +79,8 @@ export function isSlackConfigured(): boolean {
 	return env.slack !== undefined;
 }
 
+export function isPasswordSignInEnabled(): boolean {
+	return true;
+}
+
 export { apiUrl, appUrl };

@@ -67,7 +67,7 @@ describe("ensureWorkspaceMembership", () => {
 
 		expect(workspaceId).toBe(WORKSPACE_ID);
 		expect(await roleOf(firstId)).toBe("owner");
-		expect(await roleOf(secondId)).toBe("member");
+		expect(await roleOf(secondId)).toBe("admin");
 	});
 
 	it("is idempotent, so signing in again neither duplicates nor re-roles", async () => {
@@ -94,14 +94,14 @@ describe("ensureWorkspaceMembership", () => {
 		expect(rows[0]?.role).toBe("admin");
 	});
 
-	it("joins someone who signs up later as a member", async () => {
+	it("joins someone who signs up later as an admin", async () => {
 		await ensureWorkspaceMembership(secondId);
 
 		const laterId = await seedUser("later", new Date("2026-01-01T00:00:00Z"));
 
 		await ensureWorkspaceMembership(laterId);
 
-		expect(await roleOf(laterId)).toBe("member");
+		expect(await roleOf(laterId)).toBe("admin");
 	});
 
 	it("leaves the owner alone when a later arrival signs in", async () => {

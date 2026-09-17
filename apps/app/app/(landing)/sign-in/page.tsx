@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { AuthHeading, AuthShell } from "@/components/auth-shell";
 import { getSession } from "@/lib/session";
 import { getServerQueryClient, getServerTrpc } from "@/lib/trpc/server";
+import { PasswordSignIn } from "./password-sign-in";
 import { SocialSignIn } from "./social-sign-in";
 import { type SsoProvider, SsoSignIn } from "./sso-sign-in";
 
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
 type SignInOptions = {
 	google: boolean;
 	microsoft: boolean;
+	password: boolean;
 	providers: SsoProvider[];
 };
 
@@ -75,6 +77,7 @@ async function SignIn({
 	if (options?.microsoft ?? false) configured.push("microsoft");
 
 	const providers = options?.providers ?? [];
+	const password = options?.password ?? true;
 
 	const insisted = configured.find((provider) => provider === method);
 	const showSso = providers.length > 0 && insisted === undefined;
@@ -85,7 +88,7 @@ async function SignIn({
 				? configured
 				: [];
 
-	if (!showSso && social.length === 0) {
+	if (!showSso && social.length === 0 && !password) {
 		return (
 			<>
 				<AuthHeading
@@ -111,6 +114,7 @@ async function SignIn({
 			/>
 
 			{showSso ? <SsoSignIn providers={providers} /> : null}
+			{!showSso && password ? <PasswordSignIn /> : null}
 			{social.map((provider) => (
 				<SocialSignIn key={provider} provider={provider} />
 			))}
