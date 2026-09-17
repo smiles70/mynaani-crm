@@ -32,6 +32,10 @@ Three layers, all active:
 - **Intake cadence:** every distinct piece of work starts as a dated
   file in `.ai/intake/` (`YYYY-MM-DD-p<1|2|3>-<slug>.md`) with problem
   statement, scope, constraints, and edge cases.
+- **Intake triggers research immediately.** Once a problem-statement
+  intake exists, the next action is the research protocol — a dated
+  memo in `.ai/research/` with a sources table — before any
+  implementation is proposed or written. Do not sit on a filed intake.
 - **No silent no-ops.** A gate, test, or check that cannot run must say
   so loudly — never pass vacuously.
 - **Destructive ops need confirmation:** data loss, force-push,
