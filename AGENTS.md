@@ -6,6 +6,11 @@
 > Where the two files conflict on codebase style, this file wins;
 > `PROCESS_AGENTS.md` governs process, not style.
 
+**Every piece of work runs the pipeline in `PROCESS_AGENTS.md` §2 —
+intake → research → failure/edge analysis → remediation verification →
+plan → architecture pass → preflight → code → tests → staging →
+human-gated production. No code before stage 8. No skips.**
+
 **Read the doc for the area you are touching before you touch it.** The table
 below is the whole index. These are plain paths, not imports: they are not in your
 context until you read them, and the rules in them are not optional.
