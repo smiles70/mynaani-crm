@@ -71,7 +71,24 @@ export async function writeContextDevKey(db: Db, key: string): Promise<void> {
 	await db.appSetting.upsert({
 		where: { id: SETTINGS_ID },
 		create: { id: SETTINGS_ID, contextDevApiKey },
-		update: { contextDevApiKey },
+		update: { contextDevApiKey, contextDevSkipped: false },
+	});
+}
+
+export async function readContextDevSkipped(db: Db): Promise<boolean> {
+	const row = await db.appSetting.findUnique({
+		where: { id: SETTINGS_ID },
+		select: { contextDevSkipped: true },
+	});
+
+	return row?.contextDevSkipped ?? false;
+}
+
+export async function writeContextDevSkipped(db: Db): Promise<void> {
+	await db.appSetting.upsert({
+		where: { id: SETTINGS_ID },
+		create: { id: SETTINGS_ID, contextDevSkipped: true },
+		update: { contextDevSkipped: true },
 	});
 }
 

@@ -5,9 +5,11 @@ import {
 	readAgentModel,
 	readArchiveRetentionDays,
 	readContextDevKey,
+	readContextDevSkipped,
 	writeAgentModel,
 	writeArchiveRetentionDays,
 	writeContextDevKey,
+	writeContextDevSkipped,
 } from "@crm/db/settings";
 import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { ResearchKeyService } from "../agent/research-key.service";
@@ -86,9 +88,22 @@ export class SettingsService {
 	}
 
 	async researchKey(): Promise<ResearchKeySettings> {
-		const key = await readContextDevKey(this.db);
+		const [key, skipped] = await Promise.all([
+			readContextDevKey(this.db),
+			readContextDevSkipped(this.db),
+		]);
 
-		return { configured: key !== null, hint: key ? maskKey(key) : null };
+		return {
+			configured: key !== null,
+			skipped,
+			hint: key ? maskKey(key) : null,
+		};
+	}
+
+	async skipResearchKey(): Promise<ResearchKeySettings> {
+		await writeContextDevSkipped(this.db);
+
+		return this.researchKey();
 	}
 
 	async setResearchKey(apiKey: string): Promise<ResearchKeySettings> {

@@ -22,14 +22,20 @@ export function ResearchForm() {
 
 	const keyId = useId();
 
+	const proceed = {
+		onSuccess: () => {
+			router.refresh();
+			router.replace("/");
+		},
+		onError: (error: { message: string }) => toast.error(error.message),
+	};
+
 	const save = useMutation(
-		trpc.settings.setResearchKey.mutationOptions({
-			onSuccess: () => {
-				router.refresh();
-				router.replace("/");
-			},
-			onError: (error) => toast.error(error.message),
-		}),
+		trpc.settings.setResearchKey.mutationOptions(proceed),
+	);
+
+	const skip = useMutation(
+		trpc.settings.skipResearchKey.mutationOptions(proceed),
 	);
 
 	return (
@@ -70,10 +76,21 @@ export function ResearchForm() {
 				</Field>
 			</FieldGroup>
 
-			<Button type="submit" disabled={save.isPending}>
-				{save.isPending ? <Spinner data-icon="inline-start" /> : null}
-				Continue
-			</Button>
+			<div className="flex flex-col gap-2">
+				<Button type="submit" disabled={save.isPending || skip.isPending}>
+					{save.isPending ? <Spinner data-icon="inline-start" /> : null}
+					Continue
+				</Button>
+				<Button
+					type="button"
+					variant="ghost"
+					disabled={save.isPending || skip.isPending}
+					onClick={() => skip.mutate()}
+				>
+					{skip.isPending ? <Spinner data-icon="inline-start" /> : null}
+					Set up later
+				</Button>
+			</div>
 		</form>
 	);
 }

@@ -50,7 +50,6 @@ export function PasswordSignIn() {
 					autoComplete="username"
 					id="identifier"
 					name="identifier"
-					placeholder="steven@mindbyndr.com"
 					required
 					type="text"
 				/>

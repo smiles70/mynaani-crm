@@ -48,8 +48,10 @@ const workspace = (data: {
 	slug?: string;
 }) => ({ result: { data: { slug: SLUG, ...data } } });
 
-const researchKey = (configured: boolean) => ({
-	result: { data: { configured, hint: configured ? "••••9876" : null } },
+const researchKey = (configured: boolean, skipped = false) => ({
+	result: {
+		data: { configured, skipped, hint: configured ? "••••9876" : null },
+	},
 });
 
 /** Answers both gate procedures, counting the calls to each. */
@@ -141,6 +143,13 @@ describe("readResearchGate", () => {
 		answerWith(researchKey(false));
 		expect(await readResearchGate(request("/", [SESSION_COOKIE]))).toBe(
 			"required",
+		);
+	});
+
+	it("is settled when the step was skipped without a key", async () => {
+		answerWith(researchKey(false, true));
+		expect(await readResearchGate(request("/", [SESSION_COOKIE]))).toBe(
+			"settled",
 		);
 	});
 
