@@ -1,0 +1,13 @@
+.git
+node_modules
+**/node_modules
+**/.next
+**/.turbo
+**/dist
+**/.eve
+.env
+.env.*
+!.env.example
+.ai
+docs
+adrs
