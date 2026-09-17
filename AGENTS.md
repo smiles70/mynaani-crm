@@ -1,5 +1,11 @@
 # Strict rules — review before starting any work
 
+> **This is a fork** (`upstream` = `trycompai/crm`, push disabled).
+> In addition to the codebase rules below, process/governance rules live in
+> `PROCESS_AGENTS.md` (v9.51 discipline — intake, research, deploy gates).
+> Where the two files conflict on codebase style, this file wins;
+> `PROCESS_AGENTS.md` governs process, not style.
+
 **Read the doc for the area you are touching before you touch it.** The table
 below is the whole index. These are plain paths, not imports: they are not in your
 context until you read them, and the rules in them are not optional.
