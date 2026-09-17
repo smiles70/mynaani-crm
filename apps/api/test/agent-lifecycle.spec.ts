@@ -103,7 +103,10 @@ afterAll(async () => {
 		});
 	}
 	await db.agentTask.deleteMany({
-		where: { kind: "slack-channel-join", reason: joinReason },
+		where: {
+			kind: "slack-channel-join",
+			payload: { path: ["channelId"], equals: "C0009" },
+		},
 	});
 	await db.member.deleteMany({
 		where: { id: { in: [memberId, teammateMemberId] } },

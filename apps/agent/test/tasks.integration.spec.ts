@@ -15,6 +15,9 @@ const RESEARCH = { except: DIRECT_KINDS } as const;
 
 async function clear() {
 	await db.agentTask.deleteMany({ where: { kind } });
+	await db.agentTask.deleteMany({
+		where: { finishedAt: null, attempts: { gte: MAX_ATTEMPTS } },
+	});
 	await db.contact.deleteMany({ where: { email: { startsWith: "lease-" } } });
 }
 

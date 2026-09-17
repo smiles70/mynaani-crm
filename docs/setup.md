@@ -175,3 +175,9 @@ A rebuild drops the database and re-runs every migration, and it says which of t
 two reasons fired. Force one with `bun run db:test --reset`. Nothing else in the
 repo may drop a database, and this may only because the `_test` suffix is checked
 first.
+
+**Rows persist between runs, not only the schema.** Specs delete the rows they
+create, but an interrupted run leaks them, and dedupe-keyed rows (a
+`slack-channel-join` task carries `channelId` as its dedupe subject) then block
+the next run's queueing. If a spec fails on a database it passed on before,
+`bun run db:test --reset` before suspecting the code.
