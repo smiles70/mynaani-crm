@@ -84,7 +84,7 @@ request.
 
 ### The name is also the URL
 
-Served under the workspace slug (`/comp-ai/companies`). **Cosmetic, not tenancy** —
+Served under the workspace slug (`/mynaani/companies`). **Cosmetic, not tenancy** —
 every query still resolves through `WORKSPACE_ID`.
 
 - **The slug is the plugin's column**, written by `workspaceSlug(name)`

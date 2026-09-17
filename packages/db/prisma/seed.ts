@@ -49,9 +49,9 @@ function daysFromNow(days: number, jitterHours = 0): Date {
 }
 
 const OWNERS = [
-	{ name: "Ada Okafor", email: "ada@trycomp.ai" },
-	{ name: "Marcus Lindqvist", email: "marcus@trycomp.ai" },
-	{ name: "Priya Raman", email: "priya@trycomp.ai" },
+	{ name: "Ada Okafor", email: "ada@mynaani.com" },
+	{ name: "Marcus Lindqvist", email: "marcus@mynaani.com" },
+	{ name: "Priya Raman", email: "priya@mynaani.com" },
 ] as const;
 
 type SeedCompany = {
@@ -815,7 +815,7 @@ async function seedDeals(
 					id,
 					name:
 						n === 0
-							? `${company.name} — Comp AI`
+							? `${company.name} — Mynaani`
 							: `${company.name} — expansion`,
 					description: pick(DEAL_DESCRIPTIONS),
 					companyId: company.id,

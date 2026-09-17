@@ -1,5 +1,4 @@
-export const REPO_URL = "https://github.com/trycompai/crm";
-export const REPO_STARS = "4.4k";
+export const REPO_URL = "https://github.com/smiles70/mynaani-crm";
 
 export const REPO_LINKS = [
 	{ label: "GitHub", href: REPO_URL },
