@@ -29,7 +29,7 @@ export async function GET(
 
 	if (!payload?.config) return empty();
 
-	const origin = new URL(request.url).origin;
+	const origin = process.env.APP_URL ?? new URL(request.url).origin;
 	const source = trackerSource(
 		payload.config as Parameters<typeof trackerSource>[0],
 		`${origin}/api/t/e`,
