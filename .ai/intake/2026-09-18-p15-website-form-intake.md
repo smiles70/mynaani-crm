@@ -50,6 +50,15 @@ even opens) with no attribution, no record, and no agent follow-up.
    follow-up?
 3. Who deploys the RetallAi frontend — same staging-first gate?
 
+## Carried issues (keep — do not lose)
+
+1. Test contacts remain: `uat.testuser@mindbyndr.com` (staging) and
+   `uat.prod@mindbyndr.com` (production). Delete via the Contacts UI
+   or on request.
+2. Honeypot field: tracker drops empty fields but a bot that fills
+   `website` would file a junk contact. `CONTACTS_PER_HOUR` bounds
+   it; the Noni backend also rejects honeypot fills.
+
 ## Edge cases
 
 Seeded in the research memo — top ones: double-submit dedupe,
