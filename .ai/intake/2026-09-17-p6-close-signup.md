@@ -1,7 +1,8 @@
 # Intake — Close the open sign-up endpoint
 
 **Date:** 2026-09-17
-**Status:** open — risk recorded in session audit
+**Status:** implemented — on staging, verified; awaiting production
+promotion
 **Process:** v9.51 (see `PROCESS_AGENTS.md`)
 
 ## Problem statement

@@ -1,7 +1,8 @@
 # Intake — Test suite flakes on a dirty test database
 
 **Date:** 2026-09-17
-**Status:** open — observed locally; CI unaffected
+**Status:** implemented — on staging, verified; awaiting production
+promotion
 **Process:** v9.51 (see `PROCESS_AGENTS.md`)
 
 ## Problem statement

@@ -1,7 +1,8 @@
 # Intake — Safe operator access to Postgres on Railway
 
 **Date:** 2026-09-17
-**Status:** open — worked around twice with temporary TCP proxies
+**Status:** implemented — on staging, verified; awaiting production
+promotion
 **Process:** v9.51 (see `PROCESS_AGENTS.md`)
 
 ## Problem statement
