@@ -1,7 +1,7 @@
 # Intake — Retell inbound webhook → CRM contact ingestion
 
 **Date:** 2026-09-18
-**Status:** in progress
+**Status:** shipped — live on prod; real Retell webhook (chat_started) verified end-to-end
 **Process:** v9.51 pipeline; research in
 `.ai/research/2026-09-18-automation-assessment.md` (Lane 1/L3,
 edge cases 1–5, 10–11, 21, 25–26, 30)
