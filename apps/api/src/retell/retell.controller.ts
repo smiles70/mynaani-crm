@@ -1,4 +1,5 @@
 import type { IncomingMessage } from "node:http";
+import { retellWebhook } from "@crm/validation/retell-webhook";
 import {
 	Controller,
 	HttpCode,
@@ -17,7 +18,6 @@ import {
 	ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 import { AllowAnonymous } from "@thallesp/nestjs-better-auth";
-import { retellWebhook } from "@crm/validation/retell-webhook";
 import { RetellService } from "./retell.service";
 
 const MAX_BODY_BYTES = 256 * 1024;
@@ -41,9 +41,7 @@ export class RetellController {
 		description: "Retell intake is not configured on this deployment.",
 	})
 	@ApiExcludeEndpoint()
-	async webhook(
-		@Req() request: IncomingMessage,
-	): Promise<void> {
+	async webhook(@Req() request: IncomingMessage): Promise<void> {
 		const raw = await read(request, MAX_BODY_BYTES);
 		if (!raw) throw new UnauthorizedException("Missing body");
 

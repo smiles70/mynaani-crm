@@ -1,6 +1,10 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { ActivityType, type Db, Prisma, RecordSource } from "@crm/db";
-import type { RetellCall, RetellChat, RetellWebhook } from "@crm/validation/retell-webhook";
+import type {
+	RetellCall,
+	RetellChat,
+	RetellWebhook,
+} from "@crm/validation/retell-webhook";
 import {
 	Injectable,
 	Logger,
@@ -8,11 +12,11 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { AgentTriggerService } from "../agent/agent-trigger.service";
+import type { EnvironmentVariables } from "../config/env.validation";
 import { ActivityStampService } from "../crm/activity-stamp.service";
 import { normalizeEmail } from "../crm/values";
 import { InjectDatabase } from "../database/database.constants";
 import { splitName } from "../mailbox/participants";
-import type { EnvironmentVariables } from "../config/env.validation";
 
 const SIGNATURE_TOLERANCE_MS = 5 * 60 * 1000;
 const NOTE_BODY_LIMIT = 4_000;
@@ -44,9 +48,7 @@ export class RetellService {
 	verify(rawBody: string, signature: string | string[] | undefined): boolean {
 		const key = this.config.get("RETELL_API_KEY", { infer: true });
 		if (!key) {
-			throw new ServiceUnavailableException(
-				"Retell intake is not configured",
-			);
+			throw new ServiceUnavailableException("Retell intake is not configured");
 		}
 
 		if (typeof signature !== "string") return false;
@@ -78,7 +80,7 @@ export class RetellService {
 			: (session as RetellChat).chat_id;
 		const eventKey = `${webhook.event}:${sessionId}`;
 
-		let stored;
+		let stored: { id: string; filedAt: Date | null };
 		try {
 			stored = await this.db.retellEvent.create({
 				data: {
@@ -132,7 +134,14 @@ export class RetellService {
 				archivedAt: null,
 				OR: [
 					...(identity.email
-						? [{ email: { equals: identity.email, mode: "insensitive" as const } }]
+						? [
+								{
+									email: {
+										equals: identity.email,
+										mode: "insensitive" as const,
+									},
+								},
+							]
 						: []),
 					...(identity.phone ? [{ phone: identity.phone }] : []),
 				],
@@ -167,10 +176,7 @@ export class RetellService {
 		return created.id;
 	}
 
-	private async note(
-		contactId: string,
-		webhook: RetellWebhook,
-	): Promise<void> {
+	private async note(contactId: string, webhook: RetellWebhook): Promise<void> {
 		const author = await this.author(contactId);
 		if (!author) return;
 
@@ -248,7 +254,6 @@ function identityOf(webhook: RetellWebhook): Identity {
 		const email = normalizeEmail(value);
 		if (email) {
 			identity.email ??= email;
-			continue;
 		}
 	}
 
