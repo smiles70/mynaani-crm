@@ -18,9 +18,22 @@ import {
 	ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 import { AllowAnonymous } from "@thallesp/nestjs-better-auth";
+import { z } from "zod";
 import { RetellService } from "./retell.service";
 
 const MAX_BODY_BYTES = 256 * 1024;
+
+const parsedBody = z
+	.union([
+		z.string().transform((text) => ({ text, json: null })),
+		z
+			.union([z.array(z.json()), z.looseObject({})])
+			.transform((json) => ({ text: null, json })),
+	])
+	.nullable()
+	.catch(null);
+
+const requestShape = z.object({ body: parsedBody }).catch({ body: null });
 
 @ApiTags("Retell")
 @Controller("api/retell")
@@ -74,13 +87,14 @@ async function read(
 	request: IncomingMessage,
 	limit: number,
 ): Promise<string | null> {
-	const parsed = request as IncomingMessage & { body?: unknown };
-	if (typeof parsed.body === "string") {
-		return parsed.body.length > limit ? null : parsed.body;
-	}
-	if (parsed.body && typeof parsed.body === "object") {
-		const text = JSON.stringify(parsed.body);
-		return text.length > limit ? null : text;
+	const existing = requestShape.parse(request).body;
+
+	if (existing !== null) {
+		if (existing.text !== null) {
+			return existing.text.length > limit ? null : existing.text;
+		}
+
+		return JSON.stringify(existing.json);
 	}
 
 	return new Promise((resolve) => {

@@ -11,6 +11,7 @@ import {
 	ServiceUnavailableException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { z } from "zod";
 import { AgentTriggerService } from "../agent/agent-trigger.service";
 import type { EnvironmentVariables } from "../config/env.validation";
 import { ActivityStampService } from "../crm/activity-stamp.service";
@@ -51,8 +52,9 @@ export class RetellService {
 			throw new ServiceUnavailableException("Retell intake is not configured");
 		}
 
-		if (typeof signature !== "string") return false;
-		const match = /^v=(\d+),d=([0-9a-f]+)$/i.exec(signature);
+		const header = z.string().safeParse(signature);
+		if (!header.success) return false;
+		const match = /^v=(\d+),d=([0-9a-f]+)$/i.exec(header.data);
 		if (!match?.[1] || !match[2]) return false;
 
 		const timestamp = Number(match[1]);
@@ -150,12 +152,13 @@ export class RetellService {
 		});
 
 		if (existing) {
+			const data: Prisma.ContactUpdateInput = {
+				lastActivityAt: new Date(),
+			};
+			if (identity.phone) data.phone = identity.phone;
 			await this.db.contact.update({
 				where: { id: existing.id },
-				data: {
-					lastActivityAt: new Date(),
-					...(identity.phone ? { phone: identity.phone } : {}),
-				},
+				data,
 			});
 			return existing.id;
 		}
@@ -242,32 +245,33 @@ export class RetellService {
 
 function identityOf(webhook: RetellWebhook): Identity {
 	const session = "call" in webhook ? webhook.call : webhook.chat;
-	const bag = {
-		...session.metadata,
-		...session.collected_dynamic_variables,
-	} as Record<string, unknown>;
+	const bag = { ...session.metadata, ...session.collected_dynamic_variables };
 
 	const identity: Identity = { email: null, phone: null, name: null };
 
-	for (const value of Object.values(bag)) {
-		if (typeof value !== "string") continue;
-		const email = normalizeEmail(value);
-		if (email) {
-			identity.email ??= email;
+	for (const [key, raw] of Object.entries(bag)) {
+		const parsed = z.string().safeParse(raw);
+		if (!parsed.success) continue;
+		const value = parsed.data;
+		const lower = key.toLowerCase();
+
+		if (/mail/.test(lower)) {
+			identity.email ??= normalizeEmail(value);
+		}
+		if (/phone|tel|number/.test(lower)) {
+			identity.phone ??= normalizePhone(value);
+		}
+		if (/name/.test(lower)) {
+			identity.name ??= value.trim();
 		}
 	}
 
-	for (const [key, value] of Object.entries(bag)) {
-		if (typeof value !== "string") continue;
-		const lower = key.toLowerCase();
-		if (!identity.email && /mail/.test(lower)) {
-			identity.email = normalizeEmail(value);
-		}
-		if (!identity.phone && /phone|tel|number/.test(lower)) {
-			identity.phone = normalizePhone(value);
-		}
-		if (!identity.name && /name/.test(lower)) {
-			identity.name = value.trim();
+	if (!identity.email) {
+		for (const raw of Object.values(bag)) {
+			const parsed = z.string().safeParse(raw);
+			if (!parsed.success) continue;
+			identity.email = normalizeEmail(parsed.data);
+			if (identity.email) break;
 		}
 	}
 
