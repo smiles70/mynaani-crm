@@ -1,7 +1,7 @@
 # Intake — mynaani.com senior-care inquiry → CRM contact
 
 **Date:** 2026-09-18
-**Status:** staging verified — form submit files a Contact end-to-end
+**Status:** shipped to production — live form submit files a Contact
 **Process:** v9.51 pipeline; **research ran first** per user request —
 see `.ai/research/2026-09-18-website-form-intake.md`
 
