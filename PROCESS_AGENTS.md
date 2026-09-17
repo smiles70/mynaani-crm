@@ -34,8 +34,33 @@ Three layers, all active:
   statement, scope, constraints, and edge cases.
 - **Intake triggers research immediately.** Once a problem-statement
   intake exists, the next action is the research protocol — a dated
-  memo in `.ai/research/` with a sources table — before any
-  implementation is proposed or written. Do not sit on a filed intake.
+  memo in `.ai/research/` — before any implementation is proposed or
+  written. Do not sit on a filed intake.
+
+### Research protocol (full v9.51 bar)
+
+Every research memo must meet this bar before implementation starts:
+
+1. **Sources:** at least 20 external, verifiable, published sources.
+   Aim for ≥5 FAANG/top-tier engineering sources, ≥5 academic or
+   standards bodies, ≥5 industry/security/operations, ≤5 discussion
+   sources that add a counter-argument. Every URL must be reachable;
+   cite URL, org, title, and relevance in a sources table.
+2. **Decision matrix:** at least three realistic alternatives with a
+   confidence level (High / Medium / Low) and a reasoned best fit for
+   this codebase — not the newest or the most familiar.
+3. **Edge-case / remediation matrix:** the top 30 cases where the
+   chosen approach can fail or cause problems. Each row: trigger,
+   impact class (functional / performance / security / cost /
+   operational / UX / compliance), remediation, and a codebase
+   conflict check (grep before claiming the remediation is safe).
+4. **Codebase conflict check:** verify the memo does not contradict an
+   existing rule, intake, ADR, or pinned dependency.
+5. **Gaps:** anything needing user input is stated, not assumed.
+
+A smaller memo is permitted only when the change is config-level and
+reversible in minutes (a Railway variable, a boolean flag); the memo
+must say so and justify it.
 - **No silent no-ops.** A gate, test, or check that cannot run must say
   so loudly — never pass vacuously.
 - **Destructive ops need confirmation:** data loss, force-push,
