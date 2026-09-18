@@ -59,6 +59,7 @@ export class TrackingFilingService {
 	async file(submission: {
 		id: string;
 		email: string | null;
+		phone?: string | null;
 		host: string;
 		visitorId: string | null;
 		name: string | null;
@@ -67,6 +68,8 @@ export class TrackingFilingService {
 	}): Promise<FilingOutcome> {
 		const email = normalizeEmail(submission.email ?? "");
 		if (!email) return this.skip(submission.id, "No email address");
+
+		const phone = submission.phone ?? null;
 
 		if (isMachineAddress(email) || isAutomatedAddress(email)) {
 			return this.skip(submission.id, "Not an address a human reads");
@@ -86,12 +89,30 @@ export class TrackingFilingService {
 		const suppressed = await this.suppressed(email, domain);
 		if (suppressed) return this.skip(submission.id, suppressed);
 
-		const existing = await this.db.contact.findFirst({
+		const byEmail = await this.db.contact.findFirst({
 			where: { email, archivedAt: null },
-			select: { id: true },
+			select: { id: true, phone: true },
 		});
 
+		const existing =
+			byEmail ??
+			(phone
+				? await this.db.contact.findFirst({
+						where: { phone, email: null, archivedAt: null },
+						select: { id: true, phone: true },
+					})
+				: null);
+
 		if (existing) {
+			const patch: { email?: string; phone?: string } = {};
+			if (phone && !existing.phone) patch.phone = phone;
+			if (!byEmail) patch.email = email;
+			if (Object.keys(patch).length > 0) {
+				await this.db.contact.update({
+					where: { id: existing.id },
+					data: patch,
+				});
+			}
 			await this.attach(submission.id, existing.id, submission);
 			return { filed: true, contactId: existing.id };
 		}
@@ -112,6 +133,7 @@ export class TrackingFilingService {
 					firstName,
 					lastName,
 					email,
+					phone,
 					companyId,
 					source: RecordSource.TRACKING,
 					lastActivityAt: new Date(),

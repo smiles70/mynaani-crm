@@ -42,7 +42,11 @@ const filing = new TrackingFilingService(db, counters, directory, agent, stamp);
 
 let userId: string;
 
-async function submit(email: string | null, name: string | null = "Dana Reed") {
+async function submit(
+	email: string | null,
+	name: string | null = "Dana Reed",
+	phone: string | null = null,
+) {
 	const row = await db.formSubmission.create({
 		data: {
 			host,
@@ -57,6 +61,7 @@ async function submit(email: string | null, name: string | null = "Dana Reed") {
 	const outcome = await filing.file({
 		id: row.id,
 		email,
+		phone,
 		host,
 		visitorId: `visitor-${Math.random().toString(36).slice(2, 12)}`,
 		name,
@@ -78,6 +83,7 @@ async function clean() {
 	});
 	await db.contact.deleteMany({ where: { email: { endsWith: `@${domain}` } } });
 	await db.contact.deleteMany({ where: { email: `free-${suffix}@gmail.com` } });
+	await db.contact.deleteMany({ where: { phone: { startsWith: "+1999" } } });
 	await db.company.deleteMany({ where: { domain } });
 	await db.suppressedContact.deleteMany({
 		where: { email: { endsWith: `@${domain}` } },
@@ -166,6 +172,87 @@ describe("filing a form submission", () => {
 
 		expect(contact?.companyId).toBeNull();
 		expect(contact?.source).toBe("TRACKING");
+	});
+
+	it("stores the phone on a new contact", async () => {
+		const email = `phone-new@${domain}`;
+		const { outcome } = await submit(email, "Dana Reed", "+19995550101");
+
+		expect(outcome.filed).toBe(true);
+
+		const contact = await db.contact.findUnique({
+			where: { email },
+			select: { phone: true },
+		});
+
+		expect(contact?.phone).toBe("+19995550101");
+	});
+
+	it("stamps the phone onto an existing email-matched contact", async () => {
+		const email = `phone-stamp@${domain}`;
+		await submit(email);
+
+		const { outcome } = await submit(email, "Dana Reed", "+19995550142");
+
+		expect(outcome.filed).toBe(true);
+
+		const contact = await db.contact.findUnique({
+			where: { email },
+			select: { phone: true },
+		});
+
+		expect(contact?.phone).toBe("+19995550142");
+	});
+
+	it("upgrades a phone-only contact with the submission email", async () => {
+		const phoneOnly = await db.contact.create({
+			data: {
+				firstName: "Caller",
+				phone: "+19995550167",
+				source: "RETELL",
+			},
+			select: { id: true },
+		});
+
+		const email = `upgraded@${domain}`;
+		const { outcome, stored } = await submit(
+			email,
+			"Dana Reed",
+			"+19995550167",
+		);
+
+		expect(outcome.filed).toBe(true);
+		expect(stored?.contactId).toBe(phoneOnly.id);
+
+		const contact = await db.contact.findUnique({
+			where: { id: phoneOnly.id },
+			select: { email: true },
+		});
+
+		expect(contact?.email).toBe(email);
+		expect(await db.contact.count({ where: { phone: "+19995550167" } })).toBe(
+			1,
+		);
+	});
+
+	it("keeps a different email off a contact that already has one", async () => {
+		const email = `first@${domain}`;
+		await submit(email, "Dana Reed", "+19995550177");
+
+		const other = `second@${domain}`;
+		const { outcome } = await submit(other, "Sam Reed", "+19995550177");
+
+		expect(outcome.filed).toBe(true);
+
+		const first = await db.contact.findUnique({
+			where: { email },
+			select: { email: true },
+		});
+
+		expect(first?.email).toBe(email);
+		expect(await db.contact.count({ where: { phone: "+19995550177" } })).toBe(
+			2,
+		);
 	});
 
 	it("files a work address and queues the agent once", async () => {

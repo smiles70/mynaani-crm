@@ -230,6 +230,7 @@ export class TrackingIngestService {
 		const outcome = await this.filing.file({
 			id: submission.id,
 			email,
+			phone: phoneFrom(fields),
 			host,
 			visitorId,
 			name: nameFrom(fields),
@@ -353,6 +354,19 @@ function nameFrom(fields: FormFields): string | null {
 	if (first) return last ? `${first} ${last}` : first;
 
 	return pick(fields, /^(full[\s_-]?name|name)$/i) ?? pick(fields, /name/i);
+}
+
+function phoneFrom(fields: FormFields): string | null {
+	const value =
+		pick(fields, /^(phone|tel|mobile|cell)/i) ?? pick(fields, /phone/i);
+	if (!value) return null;
+
+	const digits = value.replace(/\D/g, "");
+	if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;
+	if (digits.length === 10) return `+1${digits}`;
+	if (digits.length >= 12 && digits.length <= 15) return `+${digits}`;
+
+	return null;
 }
 
 function pick(fields: FormFields, pattern: RegExp): string | null {
