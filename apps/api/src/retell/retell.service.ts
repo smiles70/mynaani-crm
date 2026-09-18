@@ -108,13 +108,18 @@ export class RetellService {
 			return;
 		}
 
+		const sibling = await this.db.retellEvent.findFirst({
+			where: { callId: sessionId, contactId: { not: null } },
+			select: { contactId: true },
+		});
+
 		const identity = identityOf(webhook);
-		if (!identity.email && !identity.phone) {
+		if (!sibling && !identity.email && !identity.phone) {
 			await this.skip(stored.id, "No identifiable caller");
 			return;
 		}
 
-		const contactId = await this.findOrCreate(identity);
+		const contactId = sibling?.contactId ?? (await this.findOrCreate(identity));
 		await this.claim(stored.id, contactId);
 		await this.note(contactId, webhook);
 
