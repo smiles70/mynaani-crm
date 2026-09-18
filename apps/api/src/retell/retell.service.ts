@@ -108,18 +108,22 @@ export class RetellService {
 			return;
 		}
 
-		const sibling = await this.db.retellEvent.findFirst({
-			where: { callId: sessionId, contactId: { not: null } },
-			select: { contactId: true },
-		});
-
 		const identity = identityOf(webhook);
-		if (!sibling && !identity.email && !identity.phone) {
+		if (!identity.email && !identity.phone) {
 			await this.skip(stored.id, "No identifiable caller");
 			return;
 		}
 
-		const contactId = sibling?.contactId ?? (await this.findOrCreate(identity));
+		const dedupKey = identity.phone ?? identity.email ?? sessionId;
+		const contactId = await this.db.$transaction(async (tx) => {
+			await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${dedupKey}))`;
+			const sibling = await tx.retellEvent.findFirst({
+				where: { callId: sessionId, contactId: { not: null } },
+				select: { contactId: true },
+			});
+			if (sibling?.contactId) return sibling.contactId;
+			return this.findOrCreate(identity, tx);
+		});
 		await this.claim(stored.id, contactId);
 		await this.note(contactId, webhook);
 
@@ -135,8 +139,11 @@ export class RetellService {
 		});
 	}
 
-	private async findOrCreate(identity: Identity): Promise<string> {
-		const existing = await this.db.contact.findFirst({
+	private async findOrCreate(
+		identity: Identity,
+		db: Db | Prisma.TransactionClient = this.db,
+	): Promise<string> {
+		const existing = await db.contact.findFirst({
 			where: {
 				archivedAt: null,
 				OR: [
@@ -161,7 +168,7 @@ export class RetellService {
 				lastActivityAt: new Date(),
 			};
 			if (identity.phone) data.phone = identity.phone;
-			await this.db.contact.update({
+			await db.contact.update({
 				where: { id: existing.id },
 				data,
 			});
@@ -169,7 +176,7 @@ export class RetellService {
 		}
 
 		const name = splitName(identity.name, identity.email ?? "caller@unknown");
-		const created = await this.db.contact.create({
+		const created = await db.contact.create({
 			data: {
 				firstName: name.firstName,
 				lastName: name.lastName,
