@@ -277,7 +277,9 @@ function identityOf(webhook: RetellWebhook): Identity {
 
 	if ("call" in webhook) {
 		const call = webhook.call as RetellCall;
-		identity.phone ??= normalizePhone(call.from_number ?? "");
+		const learnerNumber =
+			call.direction === "outbound" ? call.to_number : call.from_number;
+		identity.phone ??= normalizePhone(learnerNumber ?? "");
 	}
 
 	return identity;
