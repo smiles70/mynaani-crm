@@ -40,15 +40,11 @@ export async function sweepNewContactAlerts(): Promise<number> {
 
 	const org = await db.organization.findFirst({ select: { slug: true } });
 	const appUrl = process.env.APP_URL?.replace(/\/$/, "") ?? "";
-	const recordBase =
-		appUrl && org ? `${appUrl}/${org.slug}/contacts` : null;
+	const recordBase = appUrl && org ? `${appUrl}/${org.slug}/contacts` : null;
 
 	let sent = 0;
 	for (const contact of contacts) {
-		const posted = await post(
-			url,
-			format(contact, recordBase),
-		);
+		const posted = await post(url, format(contact, recordBase));
 		if (!posted) break;
 		sent += 1;
 		watermark = Math.max(watermark, contact.createdAt.getTime());
@@ -68,16 +64,11 @@ type AlertContact = {
 };
 
 function format(contact: AlertContact, recordBase: string | null): string {
-	const name = [contact.firstName, contact.lastName]
-		.filter(Boolean)
-		.join(" ");
-	const details = [
-		contact.email,
-		contact.phone,
-		contact.company?.name,
-	].filter(Boolean);
-	const source =
-		contact.source === "TRACKING" ? "website" : "Retell call/chat";
+	const name = [contact.firstName, contact.lastName].filter(Boolean).join(" ");
+	const details = [contact.email, contact.phone, contact.company?.name].filter(
+		Boolean,
+	);
+	const source = contact.source === "TRACKING" ? "website" : "Retell call/chat";
 	const link = recordBase ? ` ${recordBase}/${contact.id}` : "";
 	const who = details.length
 		? `${name || "Unnamed"} — ${details.join(", ")}`
