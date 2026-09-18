@@ -1,8 +1,8 @@
 # Intake — Retell outbound calls (callback + outreach)
 
 **Date:** 2026-09-18
-**Status:** staging-green — callback lane verified end-to-end on staging
-(2026-09-18); production gated on human approval
+**Status:** live — verified end-to-end on staging and production
+(2026-09-18)
 **Process:** v9.51 pipeline; paired with the Noni
 `learner-help-channel` intake and p19 RocketChat alerts.
 

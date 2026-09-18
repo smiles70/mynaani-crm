@@ -1,8 +1,8 @@
 # Intake — RocketChat as private Steven↔Kim ops channel + notifications
 
 **Date:** 2026-09-18
-**Status:** staging-green — RC workspace + #crm-alerts notifier live on
-staging (2026-09-18); Steven/Kim accounts + prod rollout still pending
+**Status:** live — RC workspaces + #crm-alerts notifier verified on staging
+and production (2026-09-18); Steven/Kim account onboarding still pending
 **Process:** v9.51 pipeline; research updated in
 `.ai/research/2026-09-18-automation-assessment.md`
 
