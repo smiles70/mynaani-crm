@@ -104,7 +104,7 @@ export class TrackingFilingService {
 				: null);
 
 		if (existing) {
-			const patch: { email?: string; phone?: string } = {};
+			const patch: Prisma.ContactUncheckedUpdateInput = {};
 			if (phone && !existing.phone) patch.phone = phone;
 			if (!byEmail) patch.email = email;
 			if (Object.keys(patch).length > 0) {
