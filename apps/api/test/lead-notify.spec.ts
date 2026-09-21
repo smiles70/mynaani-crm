@@ -90,7 +90,7 @@ describe("LeadNotifyService", () => {
 		expect(String(body?.subject)).toContain("Kim Lead");
 	});
 
-	it("sends to every address in a comma-separated LEAD_NOTIFY_TO", async () => {
+	it("sends one email per address in a comma-separated LEAD_NOTIFY_TO", async () => {
 		process.env.RESEND_API_KEY = "re_test";
 		process.env.LEAD_NOTIFY_TO =
 			" steven@mindbyndr.com , kim@mindbyndr.com , kim@mindbyndr.com ";
@@ -99,11 +99,32 @@ describe("LeadNotifyService", () => {
 
 		await new LeadNotifyService().leadFiled(lead);
 
-		expect(calls).toHaveLength(1);
-		expect(calls[0]?.body?.to).toEqual([
-			"steven@mindbyndr.com",
-			"kim@mindbyndr.com",
-		]);
+		expect(calls).toHaveLength(2);
+		expect(calls[0]?.body?.to).toEqual(["steven@mindbyndr.com"]);
+		expect(calls[1]?.body?.to).toEqual(["kim@mindbyndr.com"]);
+	});
+
+	it("delivers other recipients when one address is rejected", async () => {
+		process.env.RESEND_API_KEY = "re_test";
+		process.env.LEAD_NOTIFY_TO = "steven@mindbyndr.com,kim@mindbyndr.com";
+		process.env.LEAD_NOTIFY_FROM = "leads@mynaani.com";
+		const calls: { url: string; body: ResendSendBody | null }[] = [];
+		globalThis.fetch = mock(
+			async (url: string | URL, init?: RequestInit) => {
+				const body = init?.body
+					? (JSON.parse(String(init.body)) as ResendSendBody)
+					: null;
+				calls.push({ url: String(url), body });
+				const rejected = body?.to?.[0] === "kim@mindbyndr.com";
+				return new Response("nope", { status: rejected ? 403 : 200 });
+			},
+		) as unknown as typeof fetch;
+
+		await new LeadNotifyService().leadFiled(lead);
+
+		expect(calls).toHaveLength(2);
+		expect(calls[0]?.body?.to).toEqual(["steven@mindbyndr.com"]);
+		expect(calls[1]?.body?.to).toEqual(["kim@mindbyndr.com"]);
 	});
 
 	it("drops malformed addresses and treats an empty list as off", async () => {

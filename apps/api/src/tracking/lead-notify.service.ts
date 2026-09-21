@@ -45,6 +45,18 @@ export class LeadNotifyService {
 
 		const who = lead.name?.trim() || lead.email;
 
+		for (const recipient of to) {
+			await this.send(apiKey, from, recipient, lead, who);
+		}
+	}
+
+	private async send(
+		apiKey: string,
+		from: string,
+		to: string,
+		lead: FiledLead,
+		who: string,
+	): Promise<void> {
 		try {
 			const res = await fetch(RESEND_ENDPOINT, {
 				method: "POST",
@@ -54,7 +66,7 @@ export class LeadNotifyService {
 				},
 				body: JSON.stringify({
 					from,
-					to,
+					to: [to],
 					subject: `New lead: ${who}`,
 					text: `Name: ${who}\nEmail: ${lead.email}\nSource: ${lead.host}${lead.path}\nContact: ${lead.contactId}`,
 				}),
@@ -64,12 +76,14 @@ export class LeadNotifyService {
 				this.logger.warn({
 					message: "Lead notify email returned non-2xx",
 					status: res.status,
+					to,
 					contactId: lead.contactId,
 				});
 			}
 		} catch (error) {
 			this.logger.warn({
 				message: "Lead notify email failed",
+				to,
 				contactId: lead.contactId,
 				error: String(error),
 			});
