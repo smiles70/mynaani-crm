@@ -1,6 +1,6 @@
 # PS-CRM-003 — RocketChat webhook URL liveness unverified
 
-**Date:** 2026-09-20 · **Priority:** P2 · **Status:** intake
+**Date:** 2026-09-20 · **Priority:** P2 · **Status:** RESOLVED 2026-09-20
 **Parent:** `.ai/intake/2026-09-20-p1-lead-notification-pipeline.md`
 
 ## Problem statement
@@ -23,3 +23,11 @@ produces nothing.
 - Webhook may target a channel that no longer exists.
 - URL may point at an old service domain — verify host matches
   `RAILWAY_SERVICE_ROCKETCHAT_PROD_URL`.
+
+## Result (2026-09-20)
+
+POST to the configured webhook returned **200**; host is
+`rocketchat-prod-production.up.railway.app` — matches the live
+`rocketchat-prod` service. A probe message was delivered to the
+configured channel. Webhook is live; no action needed. PS-CRM-001 can
+implement against this URL.

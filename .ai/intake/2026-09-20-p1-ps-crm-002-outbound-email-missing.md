@@ -1,6 +1,6 @@
 # PS-CRM-002 — No outbound email capability in CRM
 
-**Date:** 2026-09-20 · **Priority:** P1 · **Status:** intake
+**Date:** 2026-09-20 · **Priority:** P1 · **Status:** implemented — awaiting staging verification
 **Parent:** `.ai/intake/2026-09-20-p1-lead-notification-pipeline.md`
 **Research:** `.ai/research/2026-09-20-lead-notification-verification.md`
 
@@ -41,3 +41,13 @@ ingest.
 - [ ] Provider + env documented in `.env.example` + env.validation.ts
 - [ ] Unit test covers send-trigger conditions and failure isolation
 - [ ] Live prod submission → delivered email observable
+
+## Implemented (2026-09-20)
+
+Option A shipped: `LeadNotifyService` in `apps/api/src/tracking/`
+sends a Resend email per filed lead, invoked by
+`TrackingIngestService.submission` after `filing.file` returns
+`filed:true`. Dedupe suppresses repeat notifications; missing env vars
+disable the channel silently; send failures are logged, never thrown.
+Envs: `RESEND_API_KEY`, `LEAD_NOTIFY_TO`, `LEAD_NOTIFY_FROM` — three
+homes done (.env.example, env.validation.ts, turbo.json).

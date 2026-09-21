@@ -1,6 +1,6 @@
 # PS-CRM-001 — RocketChat lead notification: dead config
 
-**Date:** 2026-09-20 · **Priority:** P1 · **Status:** intake
+**Date:** 2026-09-20 · **Priority:** P1 · **Status:** SUPERSEDED — already implemented
 **Parent:** `.ai/intake/2026-09-20-p1-lead-notification-pipeline.md`
 **Research:** `.ai/research/2026-09-20-lead-notification-verification.md`
 
@@ -38,3 +38,14 @@ matches in any source file. The env var exists; the reader does not.
 - [ ] Unit test: filed contact → POST body; skipped contact → none
 - [ ] Missing env var → capability off, no throw
 - [ ] Live form submission → visible `#crm-alerts` post
+
+## Correction (2026-09-20, after rebase onto origin/mynaani)
+
+The "dead config" root cause was wrong — the finding was made on a
+stale checkout. Commit `b73b543` (2026-09-18) added
+`apps/agent/agent/lib/rocketchat.ts`: `sweepNewContactAlerts` posts new
+TRACKING/RETELL contacts to `#crm-alerts` via `ROCKETCHAT_WEBHOOK_URL`,
+and intakes p18/p19 are marked live on staging + production. The env
+var is read — by the agent, not the API. **No new code needed.**
+Residual gap closed separately: `ROCKETCHAT_WEBHOOK_URL` was missing
+from `turbo.json` globalPassThroughEnv — added.

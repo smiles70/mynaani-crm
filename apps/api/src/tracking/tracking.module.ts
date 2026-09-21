@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { AgentModule } from "../agent/agent.module";
 import { CompaniesModule } from "../companies/companies.module";
 import { TrpcModule } from "../trpc/trpc.module";
+import { LeadNotifyService } from "./lead-notify.service";
 import {
 	TrackingController,
 	TrackingRetentionController,
@@ -18,6 +19,7 @@ import { TrackingRollupService } from "./tracking-rollup.service";
 	imports: [TrpcModule, AgentModule, CompaniesModule],
 	controllers: [TrackingController, TrackingRetentionController],
 	providers: [
+		LeadNotifyService,
 		TrackingConfigService,
 		TrackingCounterService,
 		TrackingFilingService,

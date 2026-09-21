@@ -125,6 +125,18 @@ export class EnvironmentVariables {
 
 	@IsOptional()
 	@IsString()
+	RESEND_API_KEY?: string;
+
+	@IsOptional()
+	@IsString()
+	LEAD_NOTIFY_TO?: string;
+
+	@IsOptional()
+	@IsString()
+	LEAD_NOTIFY_FROM?: string;
+
+	@IsOptional()
+	@IsString()
 	AGENT_BRIDGE_SECRET?: string;
 
 	@IsOptional()

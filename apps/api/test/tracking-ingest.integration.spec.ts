@@ -8,6 +8,10 @@ import {
 } from "bun:test";
 import { db } from "@crm/db";
 import { EVENTS_PER_MINUTE, type TrackingConfig } from "@crm/db/tracking";
+import type {
+	FiledLead,
+	LeadNotifyService,
+} from "../src/tracking/lead-notify.service";
 import type { TrackingConfigService } from "../src/tracking/tracking-config.service";
 import { TrackingCounterService } from "../src/tracking/tracking-counter.service";
 import type { TrackingFilingService } from "../src/tracking/tracking-filing.service";
@@ -62,7 +66,21 @@ const filing = {
 } as unknown as TrackingFilingService;
 
 const counters = new TrackingCounterService(db);
-const ingest = new TrackingIngestService(db, configService, counters, filing);
+
+const notified: FiledLead[] = [];
+const notify = {
+	leadFiled: async (lead: FiledLead) => {
+		notified.push(lead);
+	},
+} as unknown as LeadNotifyService;
+
+const ingest = new TrackingIngestService(
+	db,
+	configService,
+	counters,
+	filing,
+	notify,
+);
 
 const REQUEST = {
 	origin: `https://${child}`,
@@ -107,6 +125,7 @@ beforeAll(clean);
 
 beforeEach(async () => {
 	filed.length = 0;
+	notified.length = 0;
 	await clean();
 	await db.trackedDomain.createMany({
 		data: [
@@ -328,6 +347,48 @@ describe("a batch that looks scripted", () => {
 		]);
 
 		expect(await db.trackedEvent.count({ where: { host: parent } })).toBe(3);
+	});
+});
+
+describe("lead notification", () => {
+	it("notifies once for a filed submission", async () => {
+		const at = Date.now();
+		const submission: IncomingEvent = {
+			type: "form_submit",
+			host: parent,
+			path: "/contact",
+			at,
+			fields: { email: `notify-${suffix}@acme.test`, name: "Kim Lead" },
+		};
+
+		await accept([submission]);
+
+		expect(notified).toHaveLength(1);
+		const [first] = notified;
+		expect(first).toMatchObject({
+			email: `notify-${suffix}@acme.test`,
+			name: "Kim Lead",
+			host: parent,
+			path: "/contact",
+		});
+		expect(first?.contactId).toBeTruthy();
+	});
+
+	it("does not notify again for a deduped redelivery", async () => {
+		const at = Date.now();
+		const submission: IncomingEvent = {
+			type: "form_submit",
+			host: parent,
+			path: "/contact",
+			at,
+			fields: { email: `redelivered-${suffix}@acme.test` },
+		};
+
+		const id = visitorId();
+		await accept([submission], id);
+		await accept([submission], id);
+
+		expect(notified).toHaveLength(1);
 	});
 });
 

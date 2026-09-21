@@ -16,6 +16,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { z } from "zod";
 import { normalizeEmail } from "../crm/values";
 import { InjectDatabase } from "../database/database.constants";
+import { LeadNotifyService } from "./lead-notify.service";
 import { TrackingConfigService } from "./tracking-config.service";
 import { TrackingCounterService } from "./tracking-counter.service";
 import { TrackingFilingService } from "./tracking-filing.service";
@@ -83,6 +84,7 @@ export class TrackingIngestService {
 		private readonly config: TrackingConfigService,
 		private readonly counters: TrackingCounterService,
 		private readonly filing: TrackingFilingService,
+		private readonly notify: LeadNotifyService,
 	) {}
 
 	async accept(
@@ -227,13 +229,14 @@ export class TrackingIngestService {
 		if (!submission) return;
 		if (created.count === 0 && !unfiled(submission)) return;
 
+		const name = nameFrom(fields);
 		const outcome = await this.filing.file({
 			id: submission.id,
 			email,
 			phone: phoneFrom(fields),
 			host,
 			visitorId,
-			name: nameFrom(fields),
+			name,
 			firstTouch,
 			lastTouch,
 		});
@@ -244,7 +247,16 @@ export class TrackingIngestService {
 				host,
 				reason: outcome.reason,
 			});
+			return;
 		}
+
+		await this.notify.leadFiled({
+			contactId: outcome.contactId,
+			email: email ?? "",
+			name,
+			host,
+			path,
+		});
 	}
 
 	private async withinRate(events: number): Promise<boolean> {
