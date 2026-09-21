@@ -57,3 +57,14 @@ Direct Resend probe to `steven@mindbyndr.com` returned id
 "CRM probe — deliverability check" email in the inbox (screenshot).
 Pipeline: form → filed contact → Resend send → delivered. Production
 smoke `prod-smoke-pscrm@verify-lead.test` filed at 17:32 UTC.
+
+## Correction (2026-09-21)
+
+Earlier prod readings of "no warn = both sends accepted" were wrong: the
+api env vars were set with --skip-deploys after the running deployment
+booted, so the email leg was silently OFF during prod smokes — no sends
+at all, no warns. After redeploying api (9f811248), a real smoke shows
+the true state: steven@ send accepted (no warn, delivery confirmed),
+kim@ send rejected `status=403 to=kim@mindbyndr.com` — sandbox blocks
+non-owner recipients until mynaani.com domain verification completes.
+Per-recipient isolation proven live: kim@'s 403 did not block steven@.

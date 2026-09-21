@@ -61,3 +61,9 @@ filed and were stamped `alertedAt` by the new sweep on the next tick.
 Unit test proves partial-failure isolation (steven@ 200 + kim@ 403 →
 both attempted independently). Live inbox delivery remains the
 PS-CRM-006 human check — Resend key is send-only.
+
+## Correction (2026-09-21)
+
+First prod verification ran while env vars were pending (--skip-deploys)
+— no sends occurred. After api redeploy 9f811248: per-recipient behavior
+confirmed live — steven@ 2xx, kim@ 403 logged with the address named.
