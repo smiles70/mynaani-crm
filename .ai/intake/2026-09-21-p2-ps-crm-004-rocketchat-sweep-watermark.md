@@ -1,6 +1,6 @@
 # PS-CRM-004 — RocketChat alert sweep drops contacts during agent downtime
 
-**Date:** 2026-09-21 · **Priority:** P2 · **Status:** intake
+**Date:** 2026-09-21 · **Priority:** P2 · **Status:** implemented — awaiting staging verification
 **Parent:** `.ai/intake/2026-09-20-p1-lead-notification-pipeline.md`
 
 ## Problem statement
@@ -56,3 +56,13 @@ rejected — it trades missed alerts for duplicate alerts.
 - [ ] No duplicate alerts across restarts or repeated sweeps.
 - [ ] Sweep failures leave rows eligible for retry.
 - [ ] Same-commit tests cover restart recovery and burst >10 contacts.
+
+## Implemented (2026-09-21)
+
+Option B shipped: `alertedAt DateTime?` on `contact` (migration
+`20260921000000_contact_alerted_at`, backfills existing TRACKING/RETELL
+rows so the first tick does not flood the channel). The sweep selects
+`alertedAt IS NULL` rows, posts, stamps each row on success; failed posts
+leave rows unalerted for the next tick. Backlogs drain across sweeps,
+oldest first, capped at 10 per tick. Integration spec covers once-only,
+already-stamped, failure retry, and >10 backlog drain.

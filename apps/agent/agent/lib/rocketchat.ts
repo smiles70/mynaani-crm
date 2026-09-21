@@ -3,11 +3,8 @@ import "@crm/env/load";
 import { db, type RecordSource } from "@crm/db";
 
 const TIMEOUT_MS = 10_000;
-const LOOKBACK_MS = 2 * 60_000;
 const MAX_ALERTS_PER_SWEEP = 10;
 const INBOUND_SOURCES: readonly RecordSource[] = ["TRACKING", "RETELL"];
-
-let watermark = 0;
 
 export function rocketChatEnabled(): boolean {
 	return Boolean(process.env.ROCKETCHAT_WEBHOOK_URL);
@@ -17,10 +14,9 @@ export async function sweepNewContactAlerts(): Promise<number> {
 	const url = process.env.ROCKETCHAT_WEBHOOK_URL?.trim();
 	if (!url) return 0;
 
-	const since = new Date(Math.max(watermark, Date.now() - LOOKBACK_MS));
 	const contacts = await db.contact.findMany({
 		where: {
-			createdAt: { gt: since },
+			alertedAt: null,
 			source: { in: [...INBOUND_SOURCES] },
 		},
 		orderBy: { createdAt: "asc" },
@@ -32,7 +28,6 @@ export async function sweepNewContactAlerts(): Promise<number> {
 			email: true,
 			phone: true,
 			source: true,
-			createdAt: true,
 			company: { select: { name: true } },
 		},
 	});
@@ -46,8 +41,11 @@ export async function sweepNewContactAlerts(): Promise<number> {
 	for (const contact of contacts) {
 		const posted = await post(url, format(contact, recordBase));
 		if (!posted) break;
+		await db.contact.update({
+			where: { id: contact.id },
+			data: { alertedAt: new Date() },
+		});
 		sent += 1;
-		watermark = Math.max(watermark, contact.createdAt.getTime());
 	}
 
 	return sent;

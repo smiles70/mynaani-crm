@@ -383,6 +383,7 @@ model Contact {
   source RecordSource @default(MANUAL)
 
   lastActivityAt DateTime?
+  alertedAt      DateTime?
   archivedAt     DateTime?
 
   deals           DealContact[]
@@ -402,6 +403,7 @@ model Contact {
   @@index([ownerId])
   @@index([lastActivityAt])
   @@index([archivedAt])
+  @@index([source, alertedAt])
   @@map("contact")
 }
 

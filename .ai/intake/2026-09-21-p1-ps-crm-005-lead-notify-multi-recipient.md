@@ -1,6 +1,6 @@
 # PS-CRM-005 — Lead notification email must reach both kim@ and steven@
 
-**Date:** 2026-09-21 · **Priority:** P1 · **Status:** intake
+**Date:** 2026-09-21 · **Priority:** P1 · **Status:** implemented — awaiting staging verification
 **Parent:** `.ai/intake/2026-09-20-p1-lead-notification-pipeline.md`
 
 ## Problem statement
@@ -51,3 +51,10 @@ Option A: comma-separated list in `LEAD_NOTIFY_TO`.
       a send to both (Resend sandbox will still only deliver to the
       account owner until DNS verifies — assert the API request, not
       inbox delivery).
+
+## Implemented (2026-09-21)
+
+Option A shipped: `LEAD_NOTIFY_TO` parses as a comma-separated list —
+trimmed, email-validated, deduped; malformed entries dropped; empty list
+behaves as unset. Unit tests cover multi-recipient, whitespace,
+duplicates, malformed entries, and empty list.

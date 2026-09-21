@@ -3,6 +3,24 @@ import { Injectable, Logger } from "@nestjs/common";
 const REQUEST_TIMEOUT_MS = 5_000;
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
 
+const EMAIL_RE = /^[^\s@,]+@[^\s@,]+\.[^\s@,]+$/;
+
+function parseRecipients(raw: string | undefined): string[] {
+	const entries = (raw ?? "")
+		.split(",")
+		.map((entry) => entry.trim())
+		.filter((entry) => entry.length > 0);
+	const seen = new Set<string>();
+	const recipients: string[] = [];
+	for (const entry of entries) {
+		if (!EMAIL_RE.test(entry)) continue;
+		if (seen.has(entry)) continue;
+		seen.add(entry);
+		recipients.push(entry);
+	}
+	return recipients;
+}
+
 export interface FiledLead {
 	contactId: string;
 	email: string;
@@ -21,9 +39,9 @@ export class LeadNotifyService {
 
 	private async email(lead: FiledLead): Promise<void> {
 		const apiKey = process.env.RESEND_API_KEY?.trim();
-		const to = process.env.LEAD_NOTIFY_TO?.trim();
+		const to = parseRecipients(process.env.LEAD_NOTIFY_TO);
 		const from = process.env.LEAD_NOTIFY_FROM?.trim();
-		if (!apiKey || !to || !from) return;
+		if (!apiKey || to.length === 0 || !from) return;
 
 		const who = lead.name?.trim() || lead.email;
 
@@ -36,7 +54,7 @@ export class LeadNotifyService {
 				},
 				body: JSON.stringify({
 					from,
-					to: [to],
+					to,
 					subject: `New lead: ${who}`,
 					text: `Name: ${who}\nEmail: ${lead.email}\nSource: ${lead.host}${lead.path}\nContact: ${lead.contactId}`,
 				}),

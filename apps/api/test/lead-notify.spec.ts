@@ -35,14 +35,21 @@ function restore() {
 	globalThis.fetch = ORIGINAL_FETCH;
 }
 
+type ResendSendBody = {
+	from?: string;
+	to?: string[];
+	subject?: string;
+	text?: string;
+};
+
 function stubFetch() {
-	const calls: { url: string; body: Record<string, unknown> | null }[] = [];
+	const calls: { url: string; body: ResendSendBody | null }[] = [];
 	globalThis.fetch = mock(
-		async (url: RequestInfo | URL, init?: RequestInit) => {
+		async (url: string | URL, init?: RequestInit) => {
 			calls.push({
 				url: String(url),
 				body: init?.body
-					? (JSON.parse(String(init.body)) as Record<string, unknown>)
+					? (JSON.parse(String(init.body)) as ResendSendBody)
 					: null,
 			});
 			return new Response("ok", { status: 200 });
@@ -81,6 +88,38 @@ describe("LeadNotifyService", () => {
 		const body = calls[0]?.body;
 		expect(body?.to).toEqual(["kim@mindbyndr.com"]);
 		expect(String(body?.subject)).toContain("Kim Lead");
+	});
+
+	it("sends to every address in a comma-separated LEAD_NOTIFY_TO", async () => {
+		process.env.RESEND_API_KEY = "re_test";
+		process.env.LEAD_NOTIFY_TO =
+			" steven@mindbyndr.com , kim@mindbyndr.com , kim@mindbyndr.com ";
+		process.env.LEAD_NOTIFY_FROM = "leads@mynaani.com";
+		const calls = stubFetch();
+
+		await new LeadNotifyService().leadFiled(lead);
+
+		expect(calls).toHaveLength(1);
+		expect(calls[0]?.body?.to).toEqual([
+			"steven@mindbyndr.com",
+			"kim@mindbyndr.com",
+		]);
+	});
+
+	it("drops malformed addresses and treats an empty list as off", async () => {
+		process.env.RESEND_API_KEY = "re_test";
+		process.env.LEAD_NOTIFY_TO = "not-an-email, ,steven@mindbyndr.com";
+		process.env.LEAD_NOTIFY_FROM = "leads@mynaani.com";
+		let calls = stubFetch();
+
+		await new LeadNotifyService().leadFiled(lead);
+		expect(calls[0]?.body?.to).toEqual(["steven@mindbyndr.com"]);
+
+		process.env.LEAD_NOTIFY_TO = "not-an-email, ,also-bad";
+		calls = stubFetch();
+
+		await new LeadNotifyService().leadFiled(lead);
+		expect(calls).toHaveLength(0);
 	});
 
 	it("swallows a send failure", async () => {
