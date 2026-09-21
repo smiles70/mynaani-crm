@@ -18,21 +18,33 @@ AI-powered work completes.
 
 ## Fix
 
-Owner action, not code:
+Two paths — Vercel is not hosting here, it is the model plumbing inside
+the eve framework:
 
-- [ ] Create a Vercel AI Gateway key
-      (`vercel.com/dashboard/ai/api-keys`) **or** run `eve link` to mint
-      `VERCEL_OIDC_TOKEN` for the project.
-- [ ] Set `AI_GATEWAY_API_KEY` on the `agent` service — production first
-      (real tasks are failing there now), then staging.
-- [ ] Redeploy agent; confirm `MODEL_CALL_FAILED` stops and a queued
-      task completes.
+- **Path 1 — AI Gateway key (minimal).** The eve/AI-SDK runtime routes
+  model calls through Vercel's AI Gateway; the CRM's model setting is
+  stored in gateway format (`anthropic/claude-sonnet-5`). On Vercel
+  hosting OIDC auth is free; self-hosted needs
+  `AI_GATEWAY_API_KEY`. `VERCEL_OIDC_TOKEN` only works when the service
+  itself runs on Vercel — it does not, so the API key is the option.
+  Owner creates a key at `vercel.com/dashboard/ai/api-keys`, sets it on
+  the `agent` service (production first, then staging), redeploys.
+  Requires a Vercel account; gateway usage is billed at provider rates.
+- **Path 2 — Direct provider (no Vercel, more code).** eve accepts a
+  provider-authored `LanguageModel`
+  (`@ai-sdk/anthropic` + `ANTHROPIC_API_KEY`). But `selectedModel()`
+  reads a gateway-format id from `AppSetting.agentModelId` — bypassing
+  the gateway means mapping settings to provider instances and changing
+  the settings contract. Real code work; only worth it if the owner
+  refuses Vercel.
 
 ## Verification (agent-side, once the key lands)
 
 - [ ] Trigger a contact filing on staging → confirm `identify` task
       completes without `MODEL_CALL_FAILED`.
 - [ ] Same check on production after the key is set there.
+- [ ] If Path 2 is chosen instead: new intake + provider selection
+      decision (which LLM vendor, key custody, settings-page migration).
 
 ## Notes
 
