@@ -1,6 +1,6 @@
 # PS-CRM-005 — Lead notification email must reach both kim@ and steven@
 
-**Date:** 2026-09-21 · **Priority:** P1 · **Status:** implemented — awaiting staging verification
+**Date:** 2026-09-21 · **Priority:** P1 · **Status:** verified on staging 2026-09-21 (send path; kim@ delivery pending DNS)
 **Parent:** `.ai/intake/2026-09-20-p1-lead-notification-pipeline.md`
 
 ## Problem statement
@@ -58,3 +58,12 @@ Option A shipped: `LEAD_NOTIFY_TO` parses as a comma-separated list —
 trimmed, email-validated, deduped; malformed entries dropped; empty list
 behaves as unset. Unit tests cover multi-recipient, whitespace,
 duplicates, malformed entries, and empty list.
+
+## Staging verification (2026-09-21)
+
+Api deployed `a00ea44a`; `LEAD_NOTIFY_TO` set to
+`steven@mindbyndr.com,kim@mindbyndr.com`. Smoke submit filed
+`cmubbdv3o000102ohkhehtb7o` and the service issued the Resend send —
+Resend returned **403** because the sandbox rejects non-account-owner
+recipients until `mynaani.com` verifies. Expected and documented: the
+multi-recipient request is proven; kim@ inbox delivery awaits DNS.

@@ -1,6 +1,6 @@
 # PS-CRM-004 — RocketChat alert sweep drops contacts during agent downtime
 
-**Date:** 2026-09-21 · **Priority:** P2 · **Status:** implemented — awaiting staging verification
+**Date:** 2026-09-21 · **Priority:** P2 · **Status:** verified on staging 2026-09-21
 **Parent:** `.ai/intake/2026-09-20-p1-lead-notification-pipeline.md`
 
 ## Problem statement
@@ -66,3 +66,11 @@ rows so the first tick does not flood the channel). The sweep selects
 leave rows unalerted for the next tick. Backlogs drain across sweeps,
 oldest first, capped at 10 per tick. Integration spec covers once-only,
 already-stamped, failure retry, and >10 backlog drain.
+
+## Staging verification (2026-09-21)
+
+Agent deployed `f18dc9ff` + migration applied to staging Postgres. Smoke
+contact `smoke-pscrm0045@verify-lead.test` filed at 14:02 UTC, stamped
+`alertedAt` 14:03 UTC on the next sweep tick. The migration backfill
+stamped all pre-existing TRACKING/RETELL contacts at 13:55 UTC — no
+channel flood on deploy.
