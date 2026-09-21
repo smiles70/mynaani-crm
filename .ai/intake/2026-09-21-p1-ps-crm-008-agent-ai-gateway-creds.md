@@ -1,6 +1,6 @@
 # PS-CRM-008 — Agent AI gateway has no credentials (staging AND production)
 
-**Date:** 2026-09-21 · **Priority:** P1 · **Status:** BLOCKED — needs owner secret
+**Date:** 2026-09-21 · **Priority:** P1 · **Status:** BLOCKED — needs card on Vercel account
 **Parent:** `.ai/intake/2026-09-20-p1-lead-notification-pipeline.md`
 
 ## Problem statement
@@ -51,3 +51,12 @@ the eve framework:
 - Pre-existing failure — found during PS-CRM-004 staging verification.
 - The RocketChat alert sweep (`sweepNewContactAlerts`) does not need the
   model and is unaffected.
+
+## Progress (2026-09-21)
+
+Owner supplied `AI_GATEWAY_API_KEY` (vck_…). Set on the `agent` service
+in staging AND production; both redeployed. Staging smoke task:
+authentication now passes — the gateway rejects with a NEW error:
+"requires a valid credit card on file to service requests." Owner must
+add a card at the Vercel dashboard (free credits unlock once a card is
+on file). No further code/config work needed.
