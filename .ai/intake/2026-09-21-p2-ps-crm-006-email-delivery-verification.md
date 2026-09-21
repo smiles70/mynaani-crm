@@ -1,6 +1,6 @@
 # PS-CRM-006 — Lead notification email delivery is unverified end-to-end
 
-**Date:** 2026-09-21 · **Priority:** P2 · **Status:** intake
+**Date:** 2026-09-21 · **Priority:** P2 · **Status:** RESOLVED 2026-09-21
 **Parent:** `.ai/intake/2026-09-20-p1-lead-notification-pipeline.md`
 
 ## Problem statement
@@ -49,3 +49,11 @@ intake if verification becomes routine.
       confirmed received or its Resend dashboard status recorded.
 - [ ] Result written back into this intake; PS-CRM-002 closes only after
       this verification lands.
+
+## Result (2026-09-21)
+
+Direct Resend probe to `steven@mindbyndr.com` returned id
+`01a0c4f1-fc18-721f-a2d9-e65182bdc55b` and the owner confirmed the
+"CRM probe — deliverability check" email in the inbox (screenshot).
+Pipeline: form → filed contact → Resend send → delivered. Production
+smoke `prod-smoke-pscrm@verify-lead.test` filed at 17:32 UTC.

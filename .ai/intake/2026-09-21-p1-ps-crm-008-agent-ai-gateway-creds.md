@@ -1,6 +1,6 @@
 # PS-CRM-008 — Agent AI gateway has no credentials (staging AND production)
 
-**Date:** 2026-09-21 · **Priority:** P1 · **Status:** BLOCKED — needs card on Vercel account
+**Date:** 2026-09-21 · **Priority:** P1 · **Status:** BLOCKED — model `zai/glm-5.2` needs paid tier or a free-tier model
 **Parent:** `.ai/intake/2026-09-20-p1-lead-notification-pipeline.md`
 
 ## Problem statement
@@ -60,3 +60,11 @@ authentication now passes — the gateway rejects with a NEW error:
 "requires a valid credit card on file to service requests." Owner must
 add a card at the Vercel dashboard (free credits unlock once a card is
 on file). No further code/config work needed.
+
+## Progress 2 (2026-09-21)
+
+Card added; `customer_verification_required` cleared. New gateway error:
+`Free tier users do not have access to this model` — the CRM's configured
+model `zai/glm-5.2` is paid-tier. Owner choice: top up gateway credits,
+or switch the model on the CRM settings page to a free-tier model.
+Everything else in the chain is verified working.
