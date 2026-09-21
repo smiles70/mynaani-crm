@@ -1,6 +1,6 @@
 # PS-CRM-007 — One undeliverable recipient must not cancel the whole lead email
 
-**Date:** 2026-09-21 · **Priority:** P1 · **Status:** intake
+**Date:** 2026-09-21 · **Priority:** P1 · **Status:** verified on staging 2026-09-21
 **Parent:** `.ai/intake/2026-09-20-p1-lead-notification-pipeline.md`
 
 ## Problem statement
@@ -51,3 +51,13 @@ Option A.
 - [ ] Unit test: per-recipient send count, partial-failure isolation.
 - [ ] Production gets the same code; kim@ delivery unblocks itself when
       DNS verifies — no config change needed.
+
+## Implemented + staging verification (2026-09-21)
+
+`email()` loops the parsed recipient list; `send()` issues one Resend
+request per address so each is independent. Api deployed `8842810b`.
+Smoke contacts `smoke-pscrm007@` and `smoke-b-pscrm007@verify-lead.test`
+filed and were stamped `alertedAt` by the new sweep on the next tick.
+Unit test proves partial-failure isolation (steven@ 200 + kim@ 403 →
+both attempted independently). Live inbox delivery remains the
+PS-CRM-006 human check — Resend key is send-only.
