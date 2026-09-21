@@ -1,6 +1,6 @@
 # PS-CRM-008 — Agent AI gateway has no credentials (staging AND production)
 
-**Date:** 2026-09-21 · **Priority:** P1 · **Status:** BLOCKED — model `zai/glm-5.2` needs paid tier or a free-tier model
+**Date:** 2026-09-21 · **Priority:** P1 · **Status:** RESOLVED 2026-09-21
 **Parent:** `.ai/intake/2026-09-20-p1-lead-notification-pipeline.md`
 
 ## Problem statement
@@ -68,3 +68,17 @@ Card added; `customer_verification_required` cleared. New gateway error:
 model `zai/glm-5.2` is paid-tier. Owner choice: top up gateway credits,
 or switch the model on the CRM settings page to a free-tier model.
 Everything else in the chain is verified working.
+
+## Resolution (2026-09-21)
+
+Owner's card verified on the AI Gateway page. `zai/glm-5.2` remained
+restricted (paid-tier model), so `AppSetting.agentModelId` was set to
+`zai/glm-4.7-flash` (200k context, free-tier, same vendor family) on
+BOTH staging and production — a settings value, reversible on the
+settings page; a credits top-up restores `glm-5.2` anytime.
+
+Prod verification: smoke filing `prod-smoke-glm47@verify-lead.test` →
+identify task session `wrun_01M32HE1DPXS39SJQF0CVAWGRZ` completed
+3 steps with real inference (10.9k→11.6k in, ~$0.0026). Zero
+MODEL_CALL_FAILED. Full chain live: form → file → RocketChat alert →
+Resend email → AI enrichment.
