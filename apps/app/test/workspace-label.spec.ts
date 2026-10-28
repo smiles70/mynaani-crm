@@ -4,13 +4,13 @@ import { workspaceLabel } from "../lib/workspace-label";
 
 describe("what the header calls this install", () => {
 	it("does not say CRM twice before anybody has named the workspace", () => {
-		expect(workspaceLabel(DEFAULT_WORKSPACE_NAME)).toBe("Mynaani CRM");
+		expect(workspaceLabel(DEFAULT_WORKSPACE_NAME)).toBe("Shark Wheel CRM");
 	});
 
-	it("falls back to Mynaani CRM while the workspace is still loading", () => {
-		expect(workspaceLabel(undefined)).toBe("Mynaani CRM");
-		expect(workspaceLabel("")).toBe("Mynaani CRM");
-		expect(workspaceLabel("   ")).toBe("Mynaani CRM");
+	it("falls back to Shark Wheel CRM while the workspace is still loading", () => {
+		expect(workspaceLabel(undefined)).toBe("Shark Wheel CRM");
+		expect(workspaceLabel("")).toBe("Shark Wheel CRM");
+		expect(workspaceLabel("   ")).toBe("Shark Wheel CRM");
 	});
 
 	it("names the company once it has one", () => {

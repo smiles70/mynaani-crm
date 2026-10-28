@@ -21,10 +21,10 @@ const fontMono = Geist_Mono({
 
 export const metadata: Metadata = {
 	title: {
-		default: "Mynaani CRM",
-		template: "%s · Mynaani CRM",
+		default: "Shark Wheel CRM",
+		template: "%s · Shark Wheel CRM",
 	},
-	description: "Customer Relationship Management for Mynaani",
+	description: "Customer Relationship Management for Shark Wheel",
 	icons: {
 		icon: [
 			{ url: "/favicon.svg", type: "image/svg+xml" },
