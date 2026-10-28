@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { Suspense } from "react";
 import { AuthHeading, AuthShell } from "@/components/auth-shell";
@@ -41,6 +42,14 @@ async function Confirm({
 		const raw = params[key];
 		const value = Array.isArray(raw) ? raw.at(0) : raw;
 		if (value) verify.set(key, value);
+	}
+	if (!verify.get("errorCallbackURL")) {
+		const requestHeaders = await headers();
+		const host = requestHeaders.get("host");
+		if (host) {
+			const proto = requestHeaders.get("x-forwarded-proto") ?? "https";
+			verify.set("errorCallbackURL", `${proto}://${host}/sign-in`);
+		}
 	}
 
 	if (!verify.get("token")) {

@@ -23,6 +23,7 @@ export function MagicLinkSignIn() {
 		const { error } = await signIn.magicLink({
 			email,
 			callbackURL: `${window.location.origin}/`,
+			errorCallbackURL: `${window.location.origin}/sign-in`,
 		});
 
 		setPending(false);
