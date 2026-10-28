@@ -109,6 +109,10 @@ export const auth = betterAuth({
 
 	advanced: {
 		cookiePrefix: AUTH_COOKIE_PREFIX,
+		ipAddress: {
+			ipAddressHeaders: ["x-forwarded-for"],
+			trustedProxies: ["100.64.0.0/10"],
+		},
 
 		useSecureCookies: env.isProduction,
 		...(env.cookieDomain && {

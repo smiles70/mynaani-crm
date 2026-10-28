@@ -25,6 +25,7 @@ export async function createApp(): Promise<NestExpressApplication> {
 		{ bodyParser: false, logger: new ContextLogger() },
 	);
 
+	app.set("trust proxy", true);
 	app.use(helmet());
 	app.useGlobalPipes(
 		new ValidationPipe({
