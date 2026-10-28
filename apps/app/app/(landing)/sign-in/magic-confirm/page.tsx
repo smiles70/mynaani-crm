@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import { AuthHeading, AuthShell } from "@/components/auth-shell";
 import { MagicLinkConfirm } from "./magic-link-confirm";
 
@@ -14,9 +15,28 @@ const FORWARDED = [
 	"newUserCallbackURL",
 ] as const;
 
-export default async function MagicLinkConfirmPage({
+export default function MagicLinkConfirmPage({
 	searchParams,
 }: PageProps<"/sign-in/magic-confirm">) {
+	return (
+		<AuthShell>
+			<Suspense
+				fallback={
+					<AuthHeading
+						title="Confirm your sign in"
+						description="One moment."
+					/>
+				}
+			>
+				<Confirm searchParams={searchParams} />
+			</Suspense>
+		</AuthShell>
+	);
+}
+
+async function Confirm({
+	searchParams,
+}: Pick<PageProps<"/sign-in/magic-confirm">, "searchParams">) {
 	const params = await searchParams;
 
 	const verify = new URLSearchParams();
@@ -27,10 +47,9 @@ export default async function MagicLinkConfirmPage({
 		}
 	}
 
-	const token = verify.get("token");
-	if (!token) {
+	if (!verify.get("token")) {
 		return (
-			<AuthShell>
+			<>
 				<AuthHeading
 					title="That link did not work"
 					description="It was missing its sign-in token, so nothing was signed in."
@@ -38,12 +57,12 @@ export default async function MagicLinkConfirmPage({
 				<p className="text-center text-muted-foreground text-sm/5">
 					<Link href="/sign-in">Request a new sign-in link</Link>
 				</p>
-			</AuthShell>
+			</>
 		);
 	}
 
 	return (
-		<AuthShell>
+		<>
 			<AuthHeading
 				title="Confirm your sign in"
 				description="Press the button below to finish signing in. This uses your link once."
@@ -51,6 +70,6 @@ export default async function MagicLinkConfirmPage({
 			<MagicLinkConfirm
 				verifyPath={`/api/auth/magic-link/verify?${verify.toString()}`}
 			/>
-		</AuthShell>
+		</>
 	);
 }
