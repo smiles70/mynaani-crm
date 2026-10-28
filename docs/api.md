@@ -126,6 +126,23 @@ self-hoster's admin cannot redeploy.
 - `organizationProvisioning: { disabled: true }` — `ensureWorkspaceMembership` already
   does the join.
 
+## Magic-link sign-in is two clicks on purpose
+
+Better Auth's `magicLink` plugin issues a one-time token, verified by
+`GET /api/auth/magic-link/verify`. That endpoint consumes the token on GET, and
+corporate mail scanners prefetch every URL in a message — a raw verify URL in the
+email lets the scanner sign in first and the real click lands on `INVALID_TOKEN`.
+The mailer therefore rewrites the link to `APP_URL/sign-in/magic-confirm`, a page
+that only carries the token forward. The button on it navigates to the verify URL
+through the app's `/api/*` proxy, so the session cookie lands on the app origin.
+
+- `sendMagicLinkEmail` (`@crm/auth`) refuses to send for addresses
+  `isWorkspaceEmail` rejects, and skips silently when `RESEND_API_KEY` or
+  `LEAD_NOTIFY_FROM` is unset.
+- First-time magic-link users hit the same `ALLOWED_SIGN_IN` hook as everyone
+  else; the request endpoint always answers the same whether the email exists or
+  not.
+
 ## tRPC is the data surface; REST is auth and health only
 
 - **One router per module**, `*.router.ts` (the codegen glob), with

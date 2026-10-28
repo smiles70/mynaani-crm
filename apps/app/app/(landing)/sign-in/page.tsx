@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { AuthHeading, AuthShell } from "@/components/auth-shell";
 import { getSession } from "@/lib/session";
 import { getServerQueryClient, getServerTrpc } from "@/lib/trpc/server";
+import { MagicLinkSignIn } from "./magic-link-sign-in";
 import { PasswordSignIn } from "./password-sign-in";
 import { SocialSignIn } from "./social-sign-in";
 import { type SsoProvider, SsoSignIn } from "./sso-sign-in";
@@ -115,6 +116,7 @@ async function SignIn({
 
 			{showSso ? <SsoSignIn providers={providers} /> : null}
 			{!showSso && password ? <PasswordSignIn /> : null}
+			{!showSso ? <MagicLinkSignIn /> : null}
 			{social.map((provider) => (
 				<SocialSignIn key={provider} provider={provider} />
 			))}
