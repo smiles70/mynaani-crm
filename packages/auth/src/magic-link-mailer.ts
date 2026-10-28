@@ -4,7 +4,7 @@ import { isWorkspaceEmail } from "./workspace";
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
 const SEND_TIMEOUT_MS = 10_000;
 const PRODUCT_NAME = "Shark Wheel CRM";
-const SUBJECT = `${PRODUCT_NAME} sign-in link`;
+const SUBJECT = `Welcome to ${PRODUCT_NAME} — your sign-in link`;
 const CONFIRM_PATH = "/sign-in/magic-confirm";
 const FORWARDED_PARAMS = [
 	"token",
@@ -28,12 +28,22 @@ function confirmUrl(verifyUrl: string): string | null {
 	}
 }
 
+const STEPS = [
+	"Open the link below to reach your sign-in page.",
+	"Press Sign in on that page and you are inside.",
+	"The link works once and expires in 10 minutes.",
+	"If it ever says the link was used already, request a fresh one from the sign-in page. Some mail systems open links before you do.",
+	"No password and nothing to remember. Every visit starts with an email just like this one.",
+];
+
 function buildHtml(url: string): string {
-	return `<p>Here is your sign-in link for ${PRODUCT_NAME}:</p><p><a href="${url}">Open the sign-in page</a></p><p>Press the sign-in button on that page to finish. The link works once and expires in 10 minutes. If it says the link was already used, request a new one — some email systems scan links before you click.</p>`;
+	const steps = STEPS.map((step) => `<li>${step}</li>`).join("");
+	return `<p>Welcome to ${PRODUCT_NAME}. Your sign-in link is ready.</p><ol>${steps}</ol><p><a href="${url}">Open your sign-in page</a></p><p>Shark Wheel CRM</p>`;
 }
 
 function buildText(url: string): string {
-	return `Here is your sign-in link for ${PRODUCT_NAME}:\n\n${url}\n\nPress the sign-in button on that page to finish. The link works once and expires in 10 minutes. If it says the link was already used, request a new one — some email systems scan links before you click.`;
+	const steps = STEPS.map((step, i) => `${i + 1}. ${step}`).join("\n");
+	return `Welcome to ${PRODUCT_NAME}. Your sign-in link is ready.\n\n${steps}\n\nOpen your sign-in page:\n${url}\n\nShark Wheel CRM`;
 }
 
 async function postMagicLink(
