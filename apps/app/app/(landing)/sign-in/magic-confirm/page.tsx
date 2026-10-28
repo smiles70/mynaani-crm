@@ -38,10 +38,9 @@ async function Confirm({
 
 	const verify = new URLSearchParams();
 	for (const key of FORWARDED) {
-		const value = params[key];
-		if (typeof value === "string" && value.length > 0) {
-			verify.set(key, value);
-		}
+		const raw = params[key];
+		const value = Array.isArray(raw) ? raw.at(0) : raw;
+		if (value) verify.set(key, value);
 	}
 
 	if (!verify.get("token")) {

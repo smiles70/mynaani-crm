@@ -5,15 +5,25 @@ const originalFetch = globalThis.fetch;
 const VERIFY_URL =
 	"https://api.example.com/api/auth/magic-link/verify?token=abc123&callbackURL=%2F";
 
+type ResendSendBody = {
+	from?: string;
+	to?: string[];
+	subject?: string;
+	html?: string;
+	text?: string;
+};
+
 function captureSend() {
-	const calls: { url: string; body: Record<string, unknown> }[] = [];
-	globalThis.fetch = (async (input: unknown, init?: RequestInit) => {
+	const calls: { url: string; body: ResendSendBody | null }[] = [];
+	globalThis.fetch = (async (input: string | URL, init?: RequestInit) => {
 		calls.push({
 			url: String(input),
-			body: JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>,
+			body: init?.body
+				? (JSON.parse(String(init.body)) as ResendSendBody)
+				: null,
 		});
 		return new Response("{}", { status: 200 });
-	}) as typeof fetch;
+	}) as unknown as typeof fetch;
 	return calls;
 }
 
@@ -65,10 +75,10 @@ describe("sendMagicLinkEmail", () => {
 		const send = calls.at(0);
 		if (!send) throw new Error("expected exactly one Resend call");
 		expect(send.url).toBe("https://api.resend.com/emails");
-		expect(send.body.to).toEqual(["zack@sharkwheel.com"]);
+		expect(send.body?.to).toEqual(["zack@sharkwheel.com"]);
 
-		const html = String(send.body.html);
-		const text = String(send.body.text);
+		const html = String(send.body?.html ?? "");
+		const text = String(send.body?.text ?? "");
 		expect(html).toContain("/sign-in/magic-confirm");
 		expect(html).toContain("token=abc123");
 		expect(html).not.toContain("magic-link/verify");
