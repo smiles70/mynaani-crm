@@ -13,15 +13,29 @@ type ResendSendBody = {
 	text?: string;
 };
 
+type GmailSendBody = { raw?: string };
+
 function captureSend() {
-	const calls: { url: string; body: ResendSendBody | null }[] = [];
+	const calls: {
+		url: string;
+		body: ResendSendBody | GmailSendBody | null;
+	}[] = [];
 	globalThis.fetch = (async (input: string | URL, init?: RequestInit) => {
-		calls.push({
-			url: String(input),
-			body: init?.body
-				? (JSON.parse(String(init.body)) as ResendSendBody)
-				: null,
-		});
+		const url = String(input);
+		let body: ResendSendBody | GmailSendBody | null = null;
+		try {
+			body = init?.body
+				? (JSON.parse(String(init.body)) as ResendSendBody | GmailSendBody)
+				: null;
+		} catch {
+			body = null;
+		}
+		calls.push({ url, body });
+		if (url.includes("oauth2.googleapis.com")) {
+			return new Response(JSON.stringify({ access_token: "x" }), {
+				status: 200,
+			});
+		}
 		return new Response("{}", { status: 200 });
 	}) as unknown as typeof fetch;
 	return calls;
@@ -31,6 +45,10 @@ beforeEach(() => {
 	globalThis.fetch = originalFetch;
 	delete process.env.RESEND_API_KEY;
 	delete process.env.LEAD_NOTIFY_FROM;
+	delete process.env.GOOGLE_CLIENT_ID;
+	delete process.env.GOOGLE_CLIENT_SECRET;
+	delete process.env.GOOGLE_REFRESH_TOKEN;
+	delete process.env.GMAIL_ADDRESS;
 	process.env.ALLOWED_SIGN_IN = "sharkwheel.com";
 });
 
@@ -75,10 +93,11 @@ describe("sendMagicLinkEmail", () => {
 		const send = calls.at(0);
 		if (!send) throw new Error("expected exactly one Resend call");
 		expect(send.url).toBe("https://api.resend.com/emails");
-		expect(send.body?.to).toEqual(["zack@sharkwheel.com"]);
+		const body = send.body as ResendSendBody | null;
+		expect(body?.to).toEqual(["zack@sharkwheel.com"]);
 
-		const html = String(send.body?.html ?? "");
-		const text = String(send.body?.text ?? "");
+		const html = String(body?.html ?? "");
+		const text = String(body?.text ?? "");
 		expect(html).toContain("/sign-in/magic-confirm");
 		expect(html).toContain("token=abc123");
 		expect(html).not.toContain("magic-link/verify");
@@ -89,5 +108,35 @@ describe("sendMagicLinkEmail", () => {
 		expect(mailed.pathname).toBe("/sign-in/magic-confirm");
 		expect(mailed.searchParams.get("token")).toBe("abc123");
 		expect(mailed.searchParams.get("callbackURL")).toBe("/");
+	});
+
+	it("sends through Gmail when Resend is not configured", async () => {
+		const calls = captureSend();
+		process.env.GOOGLE_CLIENT_ID = "cid";
+		process.env.GOOGLE_CLIENT_SECRET = "csec";
+		process.env.GOOGLE_REFRESH_TOKEN = "rtok";
+		process.env.GMAIL_ADDRESS = "ops@mindbyndr.com";
+		await sendMagicLinkEmail({
+			email: "zack@sharkwheel.com",
+			url: VERIFY_URL,
+		});
+
+		expect(calls).toHaveLength(2);
+		expect(calls.at(0)?.url).toBe("https://oauth2.googleapis.com/token");
+		const send = calls.at(1);
+		if (!send) throw new Error("expected a Gmail send call");
+		expect(send.url).toBe(
+			"https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+		);
+		const raw = (send.body as GmailSendBody | null)?.raw;
+		if (!raw) throw new Error("expected a raw MIME payload");
+		const mime = Buffer.from(
+			raw.replace(/-/g, "+").replace(/_/g, "/"),
+			"base64",
+		).toString("utf-8");
+		expect(mime).toContain("To: zack@sharkwheel.com");
+		expect(mime).toContain("/sign-in/magic-confirm");
+		expect(mime).toContain("token=abc123");
+		expect(mime).not.toContain("magic-link/verify");
 	});
 });

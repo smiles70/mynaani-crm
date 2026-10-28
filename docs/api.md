@@ -137,8 +137,10 @@ that only carries the token forward. The button on it navigates to the verify UR
 through the app's `/api/*` proxy, so the session cookie lands on the app origin.
 
 - `sendMagicLinkEmail` (`@crm/auth`) refuses to send for addresses
-  `isWorkspaceEmail` rejects, and skips silently when `RESEND_API_KEY` or
-  `LEAD_NOTIFY_FROM` is unset.
+  `isWorkspaceEmail` rejects. It prefers Resend (`RESEND_API_KEY` +
+  `LEAD_NOTIFY_FROM`) and falls back to the Gmail API quad
+  (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN`,
+  `GMAIL_ADDRESS`). With neither rail configured it skips silently.
 - First-time magic-link users hit the same `ALLOWED_SIGN_IN` hook as everyone
   else; the request endpoint always answers the same whether the email exists or
   not.
