@@ -17,12 +17,10 @@ const ORIGINAL_URL = process.env.ROCKETCHAT_WEBHOOK_URL;
 
 function stubWebhook() {
 	const texts: string[] = [];
-	globalThis.fetch = mock(
-		async (_url: string | URL, init?: RequestInit) => {
-			if (init?.body) texts.push(String(init.body));
-			return new Response("ok", { status: 200 });
-		},
-	) as unknown as typeof fetch;
+	globalThis.fetch = mock(async (_url: string | URL, init?: RequestInit) => {
+		if (init?.body) texts.push(String(init.body));
+		return new Response("ok", { status: 200 });
+	}) as unknown as typeof fetch;
 	return texts;
 }
 

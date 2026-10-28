@@ -22,10 +22,7 @@ export default function MagicLinkConfirmPage({
 		<AuthShell>
 			<Suspense
 				fallback={
-					<AuthHeading
-						title="Confirm your sign in"
-						description="One moment."
-					/>
+					<AuthHeading title="Confirm your sign in" description="One moment." />
 				}
 			>
 				<Confirm searchParams={searchParams} />
