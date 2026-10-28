@@ -789,6 +789,11 @@ async function seedDeals(
 	contacts: SeededContact[],
 	ownerIds: string[],
 ): Promise<SeededDeal[]> {
+	const workspace = await db.organization.findUnique({
+		where: { id: "workspace" },
+		select: { name: true },
+	});
+	const workspaceName = workspace?.name ?? "Shark Wheel";
 	const deals: SeededDeal[] = [];
 
 	for (const [index, company] of companies.entries()) {
@@ -815,7 +820,7 @@ async function seedDeals(
 					id,
 					name:
 						n === 0
-							? `${company.name} — Mynaani`
+							? `${company.name} — ${workspaceName}`
 							: `${company.name} — expansion`,
 					description: pick(DEAL_DESCRIPTIONS),
 					companyId: company.id,
