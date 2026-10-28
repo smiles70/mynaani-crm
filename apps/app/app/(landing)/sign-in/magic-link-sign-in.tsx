@@ -42,7 +42,7 @@ export function MagicLinkSignIn() {
 					this device to continue.
 				</p>
 				<p className="text-sm text-muted-foreground">
-					The link works once and expires in 10 minutes.
+					The link works once. You can request a new one any time.
 				</p>
 			</div>
 		);

@@ -31,8 +31,7 @@ function confirmUrl(verifyUrl: string): string | null {
 const STEPS = [
 	"Open the link below to reach your sign-in page.",
 	"Press Sign in on that page and you are inside.",
-	"The link works once and expires in 10 minutes.",
-	"If it ever says the link was used already, request a fresh one from the sign-in page. Some mail systems open links before you do.",
+	"The link works once. Whenever you need a new one, request it from the sign-in page.",
 	"No password and nothing to remember. Every visit starts with an email just like this one.",
 ];
 
