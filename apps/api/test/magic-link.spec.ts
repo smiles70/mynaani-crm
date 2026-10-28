@@ -62,11 +62,13 @@ describe("sendMagicLinkEmail", () => {
 			url: VERIFY_URL,
 		});
 		expect(calls).toHaveLength(1);
-		expect(calls[0].url).toBe("https://api.resend.com/emails");
-		expect(calls[0].body.to).toEqual(["zack@sharkwheel.com"]);
+		const send = calls.at(0);
+		if (!send) throw new Error("expected exactly one Resend call");
+		expect(send.url).toBe("https://api.resend.com/emails");
+		expect(send.body.to).toEqual(["zack@sharkwheel.com"]);
 
-		const html = String(calls[0].body.html);
-		const text = String(calls[0].body.text);
+		const html = String(send.body.html);
+		const text = String(send.body.text);
 		expect(html).toContain("/sign-in/magic-confirm");
 		expect(html).toContain("token=abc123");
 		expect(html).not.toContain("magic-link/verify");
