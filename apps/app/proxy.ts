@@ -23,7 +23,7 @@ const SECTIONS = ["/companies", "/contacts", "/deals", "/settings"];
 export async function proxy(request: NextRequest) {
 	const { pathname } = request.nextUrl;
 
-	if (pathname === SIGN_IN_PATH) return NextResponse.next();
+	if (isUnder(pathname, SIGN_IN_PATH)) return NextResponse.next();
 
 	if (isAnonymous(pathname)) return NextResponse.next();
 
